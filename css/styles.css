@@ -1,0 +1,30 @@
+h2 {
+    text-align: center;
+}
+
+#fontY {
+    font-weight: bold;
+}
+
+.table {
+    text-align: center;
+    border: 0.5px solid black;
+    margin-left: auto; 
+    margin-right: auto;
+}
+td, th {
+    text-align: center;
+    border: 0.5px solid black;
+    width: 50px;
+}
+.container1 {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.container2 {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
