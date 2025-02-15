@@ -59,178 +59,119 @@
         ],
     ];
 
-//Информационная система ФИО пользователей, где ФИО хранятся в отдельных строках
+/*Информационная система ФИО пользователей, 
+где ФИО хранятся в отдельных строках*/
 
-    $base_persons_array = [
-        [
-            'surname' => 'Громов',
-            'name' => 'Александр',
-            'patronymic' => 'Иванович',
-        ],
-        [
-            'surname' => 'Петров',
-            'name' => 'Роман',
-            'patronymic' => 'Сергеевич',
-        ]
-    ];
+$surname = 'Иванов';
+$name = 'Иван';
+$patronomyc = 'Иванович';
 
-    function getFullnameFromParts($personsArray)
-    {
-        $output = '';
+/* ОБЪЕДИНЕНИЕ ФИО: getFullnameFromParts принимает как аргумент три строки — 
+фамилию, имя и отчество. Возвращает как результат их же, 
+но склеенные через пробел. */
+function getFullnameFromParts($surname, $name, $patronomyc) {
+    return $surname . ' ' . $name . ' ' . $patronomyc;
+}
+echo (getFullnameFromParts($surname, $name, $patronomyc));
+echo "<br>";
+echo "<br>";
 
-        foreach ($personsArray as $person) {
-            $output .= 'ФИО: ' . $person['surname'] . ' ' . $person['name'] . ' ' . $person['patronymic'] . "<br>";
-        }
+/* РАЗДЕЛЕНИЕ ФИО: getPartsFromFullname принимает как аргумент одну строку — 
+склеенное ФИО. Возвращает как результат массив из трёх 
+элементов с ключами ‘name’, ‘surname’ и ‘patronomyc*/
+function getPartsFromFullname($name) {
+    $name_key = ['surname', 'name', 'patronomyc'];
+    $name_value = explode(' ', $name);
+    return array_combine($name_key, $name_value);
+}
+// Выборка значений ключа 'fullname' из массива $example_persons_arra 
+foreach ($example_persons_array as $value) {
+    $name = $value['fullname'];
+    $parts = getPartsFromFullname($name);
 
-        echo $output;
-    };
+    // Вывод значений на каждой строке
+foreach ($parts as $key => $value) {
+    echo "$key: $value<br>";
+}
+};
+echo "<br>";
 
-    getFullnameFromParts($base_persons_array);
+/* СОКРАЩЕНИЕ ФИО: функция getShortName, принимает как аргумент строку,
+ содержащую ФИО вида «Иванов Иван Иванович» и возвращает строку 
+ вида «Иван И.», где сокращается фамилия и отбрасывается отчество. 
+ Для разбиения строки на составляющие используется функция 
+ getPartsFromFullname */
 
-// -----------------------------------------------------------
-    
-    function getPartsFromFullname($example_persons_array)
-    {
-        foreach ($example_persons_array as $person) {
-            $fullname = $person['fullname'];
-            $parts = explode(' ', $fullname);
+ function getShortName($name) {
+    $var = getPartsFromFullname($name);
+    $forname = $var['name'];
+    $surname = $var['surname'];
+    return $forname . ' ' . mb_substr($surname, 0, 1) . '.';
+}
+    // Вывод значений на каждой строке
+foreach ($example_persons_array as $value) {
+    $name = $value['fullname'];
+    echo getShortName($name) . "<br>"; 
+};
+echo "<br>";
 
-            if (count($parts) == 3) { // Если в строке три слова
-                $name = trim($parts[0]);
-                $surname = trim($parts[1]);
-                $patronymic = trim($parts[2]);
+/* Определение пола по ФИО. 
+Разработана функция **getGenderFromName**, принимающая как аргумент строку, содержащую ФИО (вида «Иванов Иван Иванович»). 
+Будем производить определение следующим образом:
+1. внутри функции делим ФИО на составляющие с помощью функции **getPartsFromFullname**;
+2. изначально «суммарный признак пола» считаем равным 0;
+3. если присутствует признак мужского пола — прибавляем единицу;
+4. если присутствует признак женского пола — отнимаем единицу.
+5. после проверок всех признаков, если «суммарный признак пола» больше нуля — возвращаем 1 (мужской пол);
+6. после проверок всех признаков, если «суммарный признак пола» меньше нуля — возвращаем -1 (женский пол);
+7. после проверок всех признаков, если «суммарный признак пола» равен 0 — возвращаем 0 (неопределенный пол).
+Признаки женского пола:
+* отчество заканчивается на «вна»;
+* имя заканчивается на «а»;
+* фамилия заканчивается на «ва»;
+Признаки мужского пола:
+* отчество заканчивается на «ич»;
+* имя заканчивается на «й» или «н»;
+* фамилия заканчивается на «в». */
 
-                echo "Фамилия: {$name}<br>";
-                echo "Имя: {$surname}<br>";
-                echo "Отчество: {$patronymic}<br>";
-            } else {
-                // Если в строке меньше трёх слов, продолжаем цикл
-            }
-        }
-    };
+function getGenderFromName($name) {
+    $var = getPartsFromFullname($name);
+    $surname = $var['surname'];
+    $forname = $var['name'];
+    $patronomyc = $var['patronomyc'];
+    $sumGender = 0;
 
-    getPartsFromFullname($example_persons_array);
-
-// ---------------------------------------------------------
-    
-    function getShortName($example_persons_array)
-    {
-        $shortNames = [];
-
-        foreach ($example_persons_array as $person) {
-            $fullname = $person['fullname'];
-            $parts = explode(' ', $fullname);
-
-            if (count($parts) == 3) { // Если в строке три слова
-                $name = trim($parts[0]);
-                $surname = trim($parts[1]);
-                $patronymic = trim($parts[2]);
-
-                // Склеиваем имя и фамилию в одну строку
-                $shortName = $surname . " " . mb_substr($name, 0, 1) . ".";
-
-                array_push($shortNames, $shortName);
-            }
-        }
-
-        return $shortNames;
-    };
- 
-// ----------------------------------------------------------
-// Функция определения пола по ФИО
-
-    $basePersonsArrayFull = [
-        ['fullname' => 'Громов Александр Иванович'],
-        ['fullname' => 'Петров Роман Сергеевич'],
-        ['fullname' => 'Романова Ирина Викторовна'],
-    ];
-
-
-    function getGenderFromName($fio): int
-    {
-        $gender = 0;
-
-// Разделяем ФИО на составляющие
-        list($last_name, $first_name, $middle_name) = explode(' ', $fio);
-
-        if (substr($middle_name, -3) == 'вна') {
-            $gender--;
-        }
-        if (substr($first_name, -1) == 'а') {
-            $gender--;
-        }
-        if (substr($last_name, -2) == 'ва') {
-            $gender--;
-        }
-
-        if (substr($middle_name, -3) == 'ич') {
-            $gender++;
-        } else if (substr($first_name, -1) == 'й' || substr($first_name, -1) == 'н') {
-            $gender++;
-        } else if (substr($last_name, -2) == 'в') {
-            $gender++;
-        }
-
-        return $gender;
-    };
-
-
-    foreach ($basePersonsArrayFull as $person) {
-        $fio = $person['fullname'];
-        $gender = getGenderFromName($fio);
-
-        if ($gender == 1) {
-            echo "Пол: мужской<br>";
-            echo "$fio<br>";
-        } else if ($gender == -1) {
-            echo "Пол: женский<br>";
-            echo "$fio<br>";
-        } else if ($gender == 0) {
-            echo "Пол: неопределённый<br>";
-            echo "$fio<br>";
-        }
-    };
-
-// ----------------------------------------------------------------
-// Определение возрастно-полового состава
-    
-    function getGenderDescription($persons)
-    {
-        $gender = [];
-
-        foreach ($persons as $person) {
-            $fullname = $person['fullname'];
-            $gender[$person['fullname']] = getGenderFromName($fullname);
-        }
-
-        $men = array_sum(array_filter($gender, function ($gender) {
-            return $gender > 0;
-        }));
-
-        $women = array_sum(array_filter($gender, function ($gender) {
-            return $gender < 0;
-        }));
-
-        $unknown = count($persons) - $men - $women;
-
-        // Вычисляем процентное соотношение для каждого пола
-        $total = count($persons);
-        $percentMen = round((100 * $men) / $total, 2);
-        $percentWomen = round((100 * $women) / $total, 2);
-        $percenFailedGender = round((100 * $unknown) / $total, 2);
-
-        return <<<HEREDOC
-    Гендерный состав аудитории:
-    ---------------------------
-    Мужчины - $percentMen%
-    Женщины - $percentWomen%
-    Не удалось определить - $percenFailedGender%
-HEREDOC;
+    if (mb_substr($surname, -1, 1) === 'в') {
+        $sumGender++;
+    } elseif (mb_substr($surname, -2, 2) === 'ва') {
+        $sumGender--;
     }
-    ;
 
-    echo getGenderDescription($example_persons_array) . PHP_EOL;
-    echo PHP_EOL;
+    if ((mb_substr($forname, -1, 1) == 'й') || (mb_substr($forname, -1, 1) == 'н')) {
+        $sumGender++;
+    } elseif (mb_substr($forname, -1, 1) === 'а') {
+        $sumGender--;
+    }
+
+    if (mb_substr($patronomyc, -2, 2) === 'ич') {
+        $sumGender++;
+    } elseif (mb_substr($patronomyc, -3, 3) === 'вна') {
+        $sumGender--;
+    }
+
+    return ($sumGender <=> 0);
+}
+
+foreach ($example_persons_array as $value) {
+    $name = $value['fullname'];
+    if (getGenderFromName($name) === 1) {
+        echo 'мужской пол ' . ($name) . '<br>';
+    } elseif (getGenderFromName($name) === -1) {
+        echo 'женский пол ' . ($name) . '<br>';
+    } else {
+        echo 'неопределённый пол ' . ($name) . '<br>';
+    }
+};
 ?>
 
 </body>
